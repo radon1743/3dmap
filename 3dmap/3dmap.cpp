@@ -1,15 +1,16 @@
-
+﻿
 
 #include <iostream>
 #include <Windows.h>
+#include <chrono>
 using namespace std;
 
 int nScreenWidth = 120;
 int nScreenHeight = 40;
 
-float fPlayerX = 0.0f;
-float fPlayerY = 0.0f;
-float fPlayerA = 0.0f;
+float fPlayerX = 8.0f;
+float fPlayerY = 8.0f;
+float fPlayerA = 40.0f;
 
 int nMapHeight = 16;
 int nMapWidth = 16;
@@ -30,20 +31,48 @@ int main()
     map += L"#..............#";
     map += L"#..............#";
     map += L"#..............#";
+    map += L"#....######....#";
+    map += L"#....#.........#";
+    map += L"#....#....#....#";
+    map += L"#....#....#....#";
+    map += L"#....#....#....#";
+    map += L"#....######....#";
+    map += L"#....######....#";
     map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
-    map += L"#..............#";
+    map += L"#..............#"; 
     map += L"#..............#";
     map += L"################";
 
 
+
+    auto tp1 = chrono::system_clock::now();
+    auto tp2 = chrono::system_clock::now();
+
     while (true) {
+
+        tp2 = chrono::system_clock::now();
+        chrono::duration<float> elapsedTime = tp2 - tp1;
+        tp1 = tp2;
+        float fElapsedTime = elapsedTime.count();
+
+
+        if (GetAsyncKeyState((unsigned short)'A') & 0x8000)  {
+            fPlayerA -= (1.0f) * fElapsedTime;
+
+        }
+        if (GetAsyncKeyState((unsigned short)'D') & 0x8000) {
+            fPlayerA += (1.0f) * fElapsedTime;
+
+        }
+        if (GetAsyncKeyState((unsigned short)'W') & 0x8000) {
+            fPlayerX += sinf(fPlayerA) * 5.0f * fElapsedTime;
+            fPlayerY += cosf(fPlayerA) * 5.0f * fElapsedTime;
+        }
+        if (GetAsyncKeyState((unsigned short)'S') & 0x8000) {
+            fPlayerX -= sinf(fPlayerA) * 5.0f * fElapsedTime;
+            fPlayerY -= cosf(fPlayerA) * 5.0f * fElapsedTime;
+
+        }
 
         for (int x = 0; x < nScreenWidth; x++) {
             
@@ -83,13 +112,21 @@ int main()
             int nCeiling = (float)(nScreenHeight / 2.0) - nScreenHeight / ((float)fDistanceToWall);
             int nFloor = nScreenHeight - nCeiling;
             
+            short nShade = ' ';
+
+            if (fDistanceToWall <= fDepth / 4.0f) nShade = 0x2588;
+            else if (fDistanceToWall <= fDepth / 3.0f) nShade = 0x2593;
+            else if (fDistanceToWall <= fDepth / 2.0f) nShade = 0x2592;
+            else if (fDistanceToWall <= fDepth / 1.0f) nShade = 0x2591;
+            else nShade = ' ';
+
             for (int y = 0; y < nScreenHeight; y++) {
             
                 if (y < nCeiling) {
                     screen[y * nScreenWidth + x] = ' ';
                 }
                 else if(y > nCeiling && y <= nFloor) {
-                    screen[y * nScreenWidth + x] = '@';
+                    screen[y * nScreenWidth + x] = nShade;
                 }
                 else {
                     screen[y * nScreenWidth + x] = ' ';
